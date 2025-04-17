@@ -19,37 +19,55 @@ cred = credentials.Certificate(os.getenv('FIREBASE_CREDENTIALS_PATH'))
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
-# Use the company list from greenhouse_scraper.py
-GREENHOUSE_COMPANIES = list(COMPANIES.keys())
+def get_user_preferences():
+    """Fetch all users and their company preferences from Firestore"""
+    users = []
+    users_ref = db.collection('users').stream()
+    for user in users_ref:
+        user_data = user.to_dict()
+        users.append({
+            'id': user.id,
+            'name': user_data.get('name'),
+            'email': user_data.get('email'),
+            'companies': user_data.get('companies', [])
+        })
+    return users
 
 def scrape_jobs():
-    new_jobs = []
-    total_jobs_found = 0
+    """Scrape jobs and send personalized emails to users"""
+    # Get all users and their preferences
+    users = get_user_preferences()
+    if not users:
+        print("No users found in database")
+        return
     
-    # Scrape Greenhouse jobs
-    print("\nScraping Greenhouse jobs...")
+    # Scrape jobs for all companies
+    all_jobs = {}
     for company_name, board_token in COMPANIES.items():
         print(f"Scraping jobs from {company_name}...")
         company_jobs = scrape_greenhouse_jobs(company_name, board_token)
-        total_jobs_found += len(company_jobs)
+        all_jobs[company_name] = company_jobs
+    
+    # For each user, find new jobs from their selected companies
+    for user in users:
+        user_new_jobs = []
+        for company in user['companies']:
+            if company in all_jobs:
+                company_jobs = all_jobs[company]
+                for job in company_jobs:
+                    # Check if job already exists in database
+                    job_ref = db.collection('jobs').where('job_id', '==', job['job_id']).get()
+                    if not job_ref:
+                        # Add to database
+                        db.collection('jobs').add(job)
+                        user_new_jobs.append(job)
         
-        for job in company_jobs:
-            # Check if job already exists in database using job_id
-            job_ref = db.collection('jobs').where('job_id', '==', job['job_id']).get()
-            
-            if not job_ref:
-                # Add to database
-                db.collection('jobs').add(job)
-                new_jobs.append(job)
-                print(f"Added new job: {job['title']} at {job['company']} (ID: {job['job_id']})")
-    
-    # Always send an email, whether there are new jobs or not
-    send_email_notification(new_jobs)
-    
-    if new_jobs:
-        print(f"\nFound {len(new_jobs)} new jobs!")
-    else:
-        print("\nNo new jobs found.")
+        # Send email to user if there are new jobs
+        if user_new_jobs:
+            send_email_notification(user['email'], user['name'], user_new_jobs)
+            print(f"Sent email to {user['email']} with {len(user_new_jobs)} new jobs")
+        else:
+            print(f"No new jobs found for {user['email']}")
 
 def create_html_table(jobs):
     """Create an HTML table for the jobs"""
@@ -150,38 +168,42 @@ def create_html_table(jobs):
     """
     return html
 
-def send_email_notification(jobs):
+def send_email_notification(recipient_email, recipient_name, jobs):
+    """Send email notification to a specific user"""
     sender_email = os.getenv('EMAIL_USER')
     sender_password = os.getenv('EMAIL_PASSWORD')
-    recipient_email = os.getenv('RECIPIENT_EMAIL')
     
     msg = MIMEMultipart('alternative')
     msg['From'] = sender_email
     msg['To'] = recipient_email
     
-    if jobs:
-        msg['Subject'] = f"New Product Manager Openings Found ({len(jobs)} positions)"
-        
-        # Create both plain text and HTML versions
-        text_content = "New Product Manager positions found:\n\n"
-        for job in jobs:
-            text_content += f"Company: {job['company']}\n"
-            text_content += f"Position: {job['title']}\n"
-            text_content += f"Location: {job['location']}\n"
-            text_content += f"Apply: {job['url']}\n"
-            text_content += "-" * 50 + "\n\n"
-        
-        # Create HTML version with updated URL field
-        html_content = create_html_table(jobs)
-        
-        # Attach both versions
-        msg.attach(MIMEText(text_content, 'plain'))
-        msg.attach(MIMEText(html_content, 'html'))
-    else:
-        msg['Subject'] = "Product Manager Jobs Update - No New Positions"
-        body = "No new Product Manager positions were found in this search.\n\n"
-        body += "Keep checking back for new opportunities!"
-        msg.attach(MIMEText(body, 'plain'))
+    msg['Subject'] = f"New Product Manager Openings Found ({len(jobs)} positions)"
+    
+    # Create both plain text and HTML versions
+    text_content = f"Hi {recipient_name},\n\n"
+    text_content += "New Product Manager positions found:\n\n"
+    for job in jobs:
+        text_content += f"Company: {job['company']}\n"
+        text_content += f"Position: {job['title']}\n"
+        text_content += f"Location: {job['location']}\n"
+        text_content += f"Apply: {job['url']}\n"
+        text_content += "-" * 50 + "\n\n"
+    
+    # Create HTML version
+    html_content = f"""
+    <html>
+    <body>
+    <p>Hi {recipient_name},</p>
+    <p>We found {len(jobs)} new Product Manager positions that match your preferences:</p>
+    {create_html_table(jobs)}
+    <p>Best regards,<br>Job Updates Team</p>
+    </body>
+    </html>
+    """
+    
+    # Attach both versions
+    msg.attach(MIMEText(text_content, 'plain'))
+    msg.attach(MIMEText(html_content, 'html'))
     
     try:
         server = smtplib.SMTP('smtp.gmail.com', 587)
@@ -189,9 +211,9 @@ def send_email_notification(jobs):
         server.login(sender_email, sender_password)
         server.send_message(msg)
         server.quit()
-        print("Email notification sent successfully!")
+        print(f"Email notification sent successfully to {recipient_email}!")
     except Exception as e:
-        print(f"Error sending email: {str(e)}")
+        print(f"Error sending email to {recipient_email}: {str(e)}")
 
 if __name__ == "__main__":
     print("Starting job scraper...")
