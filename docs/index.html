@@ -62,13 +62,46 @@
         <!-- Email Verification Container -->
         <div class="verification-container hidden" id="verification-container">
             <div class="verification-box">
+                <div class="verification-icon">✉️</div>
                 <h2>Verify Your Email</h2>
-                <p>We've sent a verification email to your inbox. Please verify your email address to start receiving
-                    job notifications.</p>
-                <p class="verification-note">If you don't see the email, check your spam folder.</p>
+                <div class="verification-steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h3>Check Your Inbox</h3>
+                            <p>We've sent a verification email to your inbox.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h3>Click the Link</h3>
+                            <p>Open the email and click the verification link.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h3>Start Getting Updates</h3>
+                            <p>Once verified, you'll start receiving job notifications.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="verification-note">
+                    <span class="note-icon">💡</span>
+                    <p>Can't find the email? Check your spam folder or request a new one.</p>
+                </div>
                 <div id="verification-message" class="message"></div>
+                <div class="verification-timer">
+                    <span class="timer-icon">⏳</span>
+                    <span class="timer-text">You can request another email in <span
+                            id="timer-countdown">0:00</span></span>
+                </div>
                 <div class="verification-actions">
-                    <button class="btn btn-primary" id="resend-verification">Resend Verification Email</button>
+                    <button class="btn btn-primary" id="resend-verification">
+                        <span class="btn-icon">↻</span>
+                        Resend Verification Email
+                    </button>
                     <button class="btn btn-secondary" onclick="signOut()">Sign Out</button>
                 </div>
             </div>
