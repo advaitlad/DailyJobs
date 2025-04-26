@@ -35,7 +35,7 @@ jobs:
       
     - name: Run job scraper
       env:
-        FIREBASE_CREDENTIALS_PATH: 'firebase_credentials.json'
+        FIREBASE_CREDENTIALS_JSON: ${{ secrets.FIREBASE_CREDENTIALS_JSON }}
         EMAIL_USER: ${{ secrets.EMAIL_USER }}
         EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
       run: |
