@@ -153,6 +153,7 @@ def is_sre_engineer_role(title):
         'site reliability',
         'sre',
         'site reliability',
+        'DevOps Engineer'
     ]
     
     if not title:
@@ -160,6 +161,22 @@ def is_sre_engineer_role(title):
         
     title_lower = title.lower()
     return any(keyword in title_lower for keyword in sre_keywords)
+
+def is_ml_engineer_role(title):
+    """Check if a job title is a software engineering role"""
+    ml_keywords = [
+        'machine learning engineer',
+        'ml engineer',
+        'ml ops',
+        'artificial intelligence engineer',
+        'ai engineer'
+    ]
+    
+    if not title:
+        return False
+        
+    title_lower = title.lower()
+    return any(keyword in title_lower for keyword in ml_keywords)
 
 def get_role_type(title):
     """Determine the role type based on the job title"""
