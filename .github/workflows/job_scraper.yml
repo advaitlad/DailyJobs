@@ -4,11 +4,6 @@ on:
   schedule:
     - cron: '0 */6 * * *'  # Runs every 6 hours
   workflow_dispatch:        # Allows manual trigger from GitHub UI
-  push:
-    paths:
-      - 'job_scraper.py'   # Run when job_scraper.py is modified
-      - 'greenhouse_scraper.py'  # Run when greenhouse_scraper.py is modified
-      - '.github/workflows/job_scraper.yml'  # Run when workflow file is modified
 
 jobs:
   scrape:
