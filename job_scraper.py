@@ -16,7 +16,7 @@ from dateutil import parser
 load_dotenv()
 
 # Initialize Firebase with JSON directly
-cred_json = os.getenv('FIREBASE_CREDENTIALS_JSON')
+FIREBASE_CREDS_PATH = 'config/firebase-adminsdk-fbsvc-ac74291157.json'
 cred = credentials.Certificate(json.loads(cred_json))
 firebase_admin.initialize_app(cred)
 db = firestore.client()
