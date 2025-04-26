@@ -1,6 +1,5 @@
 [build]
   publish = "docs"
-  command = "python -m pip install -r requirements.txt"
 
 [[redirects]]
   from = "/*"

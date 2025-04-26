@@ -109,8 +109,60 @@ def is_bi_engineer_role(title):
     title_lower = title.lower()
     return any(keyword in title_lower for keyword in bi_keywords)
 
+def is_data_engineer_role(title):
+    """Check if a job title is a data engineering role"""
+    data_eng_keywords = [
+        'data engineer',
+        'etl engineer'
+    ]
+    
+    if not title:
+        return False
+        
+    title_lower = title.lower()
+    return any(keyword in title_lower for keyword in data_eng_keywords)
+
+def is_software_engineer_role(title):
+    """Check if a job title is a software engineering role"""
+    swe_keywords = [
+        'software engineer',
+        'full stack engineer',
+        'backend engineer',
+        'frontend engineer',
+        'devops engineer',
+        'software developer',
+        'full stack developer',
+        'backend developer',
+        'frontend developer',
+        'web developer',
+        'cloud engineer',
+        'systems engineer',
+    ]
+    
+    if not title:
+        return False
+        
+    title_lower = title.lower()
+    return any(keyword in title_lower for keyword in swe_keywords)
+
+def is_sre_engineer_role(title):
+    """Check if a job title is a software engineering role"""
+    sre_keywords = [
+        'sre engineer',
+        'site reliability engineer',
+        'site reliability',
+        'sre',
+        'site reliability',
+    ]
+    
+    if not title:
+        return False
+        
+    title_lower = title.lower()
+    return any(keyword in title_lower for keyword in sre_keywords)
+
 def get_role_type(title):
-    """Determine if a role is a product, program management, data analyst, business analyst, data scientist, or BI engineer position"""
+    """Determine the role type based on the job title"""
     if is_product_role(title):
         return 'product'
     elif is_program_role(title):
@@ -123,6 +175,12 @@ def get_role_type(title):
         return 'scientist'
     elif is_bi_engineer_role(title):
         return 'bi'
+    elif is_data_engineer_role(title):
+        return 'dataeng'
+    elif is_software_engineer_role(title):
+        return 'swe'
+    elif is_sre_engineer_role(title):
+        return 'sre'
     return None
 
 def parse_greenhouse_date(date_str: str) -> datetime:

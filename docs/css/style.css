@@ -1114,3 +1114,67 @@ input[type="checkbox"]:checked::after {
     color: var(--text-secondary);
     font-size: 1.1rem;
 }
+
+.job-categories {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.category-group {
+    background: var(--background-color);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+}
+
+.category-title {
+    font-size: 1.1rem;
+    color: var(--primary-color);
+    margin-bottom: 0.75rem;
+}
+
+.job-types-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.job-type-checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 180px;
+}
+
+.job-type-checkbox-label:hover {
+    border-color: var(--primary-color);
+    background: #F8F9FA;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .job-categories {
+        gap: 0.75rem;
+    }
+
+    .category-group {
+        padding: 0.75rem;
+    }
+
+    .job-types-grid {
+        gap: 0.5rem;
+    }
+
+    .job-type-checkbox-label {
+        width: 100%;
+        min-width: unset;
+        padding: 0.5rem 0.75rem;
+    }
+}
