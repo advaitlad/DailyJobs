@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Job Updates - Sign In</title>
+    <title>PingMeJobs - Your Daily Job Updates</title>
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="css/style.css">
 </head>
@@ -13,8 +13,22 @@
     <div class="container">
         <div class="auth-container" id="auth-container">
             <div class="auth-header">
-                <h1>Job Updates</h1>
-                <p>Stay updated with the latest job postings</p>
+                <h1>PingMeJobs</h1>
+                <p class="tagline">Your personal job search assistant</p>
+                <div class="value-props">
+                    <div class="value-prop">
+                        <span class="emoji">🎯</span>
+                        <p>Get tailored job alerts for Product, Data, and Business roles</p>
+                    </div>
+                    <div class="value-prop">
+                        <span class="emoji">⚡</span>
+                        <p>Be the first to know about new opportunities</p>
+                    </div>
+                    <div class="value-prop">
+                        <span class="emoji">🎨</span>
+                        <p>Customize your preferences and never miss relevant openings</p>
+                    </div>
+                </div>
             </div>
 
             <div class="auth-toggle" id="authToggle">
@@ -26,34 +40,42 @@
 
             <!-- Login Form -->
             <form id="loginForm" class="auth-form">
+                <div class="welcome-message">
+                    <h2>Welcome Back! 👋</h2>
+                    <p>Log in to manage your job preferences and start receiving personalized job alerts.</p>
+                </div>
                 <div class="form-group">
                     <label for="loginEmail">Email</label>
-                    <input type="email" id="loginEmail" required>
+                    <input type="email" id="loginEmail" required placeholder="Enter your email">
                 </div>
                 <div class="form-group">
                     <label for="loginPassword">Password</label>
-                    <input type="password" id="loginPassword" required>
+                    <input type="password" id="loginPassword" required placeholder="Enter your password">
                 </div>
                 <button type="submit" class="btn btn-primary">Login</button>
             </form>
 
             <!-- Signup Form -->
             <form id="signupForm" class="auth-form hidden">
+                <div class="welcome-message">
+                    <h2>Join PingMeJobs! 🚀</h2>
+                    <p>Create an account to start receiving daily updates for your dream job opportunities.</p>
+                </div>
                 <div class="form-group">
                     <label for="name">Full Name</label>
-                    <input type="text" id="name" required>
+                    <input type="text" id="name" required placeholder="Enter your full name">
                 </div>
                 <div class="form-group">
                     <label for="signupEmail">Email</label>
-                    <input type="email" id="signupEmail" required>
+                    <input type="email" id="signupEmail" required placeholder="Enter your email">
                 </div>
                 <div class="form-group">
                     <label for="signupPassword">Password</label>
-                    <input type="password" id="signupPassword" required>
+                    <input type="password" id="signupPassword" required placeholder="Choose a password">
                 </div>
                 <div class="form-group">
                     <label for="signupConfirmPassword">Confirm Password</label>
-                    <input type="password" id="signupConfirmPassword" required>
+                    <input type="password" id="signupConfirmPassword" required placeholder="Confirm your password">
                 </div>
                 <button type="submit" class="btn btn-primary">Sign Up</button>
             </form>
