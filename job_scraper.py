@@ -229,7 +229,7 @@ def send_email_notification(jobs, recipient_email):
         msg.attach(MIMEText(html_content, 'html'))
     else:
         msg['Subject'] = "Jobs Update - No New Positions"
-        body = "No new positions were updated in the last 24 hours.\n\n"
+        body = "No new positions were updated in the last 6 hours.\n\n"
         body += "Keep checking back for new opportunities!"
         msg.attach(MIMEText(body, 'plain'))
     
