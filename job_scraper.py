@@ -106,7 +106,7 @@ def create_html_table(jobs):
     html = """
     <html>
     <head>
-    <div><h1>Job Openings Updated in the Last 24 Hours</h1></div>
+    <div><h1>Job Openings Updated in the Last 6 Hours</h1></div>
     <style>
         table {
             border-collapse: collapse;
