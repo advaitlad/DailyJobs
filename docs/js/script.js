@@ -121,7 +121,7 @@ function populateCompanies(selectedCompanies = [], searchTerm = '') {
     
     // Show/hide no selection message
     noSelectedMessage.style.display = selectedCount === 0 ? 'block' : 'none';
-    noSelectedMessage.textContent = 'You haven\'t selected any companies yet';
+    noSelectedMessage.textContent = 'Please select at least one company to start receiving emails.';
 
     // Show message when no available companies match the search
     if (availableCount === 0 && searchTerm) {
