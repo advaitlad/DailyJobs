@@ -48,7 +48,7 @@ def is_data_analyst_role(title):
         'Product Insights Analyst'
         'Data Analytics',
         'Product Analytics',
-        'Experimenttaion Analyst'
+        'Experimentation Analyst'
     ]
     
     if not title:
@@ -208,15 +208,56 @@ def parse_greenhouse_date(date_str: str) -> datetime:
         print(f"Error parsing date '{date_str}': {e}")
         return None
 
-def scrape_greenhouse_jobs(company_name: str, board_token: str) -> List[Dict]:
+def get_experience_level(title):
+    """Efficiently determine experience level from job title"""
+    if not title:
+        return 'unknown'
+        
+    title_lower = title.lower()
+    
+    # Define experience level keywords with their variations
+    senior_keywords = {
+        'senior', 'lead', 'principal', 'staff', 'sr.', 'head', 'chief',
+        'director', 'vp', 'vice president', 'senior manager', 'lead manager',
+        'principal manager', 'staff manager', 'head manager', 'group'
+    }
+    
+    junior_keywords = {
+        'junior', 'entry', 'associate', 'jr.', 'assistant',
+        'graduate', 'new grad', 'new graduate', 'entry level',
+        'entry-level', 'early career', 'early-career'
+    }
+    
+    intern_keywords = {
+        'intern', 'internship', 'co-op', 'coop', 'student', 'apprentice',
+        'trainee', 'fellowship', 'fellow'
+    }
+    
+    # Check for senior level first (most specific)
+    if any(keyword in title_lower for keyword in senior_keywords):
+        return 'senior'
+    
+    # Check for intern level
+    if any(keyword in title_lower for keyword in intern_keywords):
+        return 'intern'
+    
+    # Check for junior level
+    if any(keyword in title_lower for keyword in junior_keywords):
+        return 'junior'
+
+    # Default to mid-level for ambiguous titles
+    return 'mid-level'
+
+def scrape_greenhouse_jobs(company_name: str, board_token: str, experience_levels: List[str] = None) -> List[Dict]:
     """Generic function to scrape jobs from any Greenhouse board
 
     Args:
         company_name: Name of the company (e.g., 'pinterest', 'stripe')
         board_token: The board token from the company's Greenhouse URL
+        experience_levels: List of experience levels to filter by (e.g., ['junior', 'mid-level'])
     """
     url = f"https://boards-api.greenhouse.io/v1/boards/{board_token}/jobs"
-    last_24h = datetime.now(tzutc()) - timedelta(hours=24)  # Use tzutc() directly
+    last_24h = datetime.now(tzutc()) - timedelta(hours=24)
 
     try:
         response = requests.get(url)
@@ -233,6 +274,13 @@ def scrape_greenhouse_jobs(company_name: str, board_token: str) -> List[Dict]:
             if not role_type:
                 continue
             
+            # Get experience level
+            experience_level = get_experience_level(title)
+            
+            # Skip if experience level doesn't match preferences
+            if experience_levels and experience_level not in experience_levels:
+                continue
+            
             # Parse and check update time
             updated_at_str = job.get('updated_at', '')
             updated_at = parse_greenhouse_date(updated_at_str)
@@ -247,7 +295,7 @@ def scrape_greenhouse_jobs(company_name: str, board_token: str) -> List[Dict]:
             location = job.get('location', {}).get('name', 'N/A')
 
             # Format the update time for display
-            time_ago = datetime.now(tzutc()) - updated_at  # Use tzutc() directly
+            time_ago = datetime.now(tzutc()) - updated_at
             hours_ago = round(time_ago.total_seconds() / 3600, 1)
 
             job_info = {
@@ -259,7 +307,8 @@ def scrape_greenhouse_jobs(company_name: str, board_token: str) -> List[Dict]:
                 'hours_ago': hours_ago,
                 'url': job.get('absolute_url', 'N/A'),
                 'role_type': role_type,
-                'updated_at': updated_at  # Pass the datetime object directly
+                'updated_at': updated_at,
+                'experience_level': experience_level
             }
             processed_jobs.append(job_info)
 
@@ -313,6 +362,7 @@ def main():
         print(f"Title: {job['title']}")
         print(f"Location: {job['location']}")
         print(f"Department: {job['department']}")
+        print(f"Experience Level: {job['experience_level']}")
         print(f"Updated: {job['updated_at']} ({job['hours_ago']} hours ago)")
         print(f"URL: {job['url']}")
         print("-" * 80)

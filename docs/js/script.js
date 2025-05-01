@@ -151,10 +151,16 @@ async function savePreferences() {
             .filter(checkbox => checkbox.checked)
             .map(checkbox => checkbox.value);
 
+        // Get selected experience levels
+        const selectedExperienceLevels = Array.from(document.querySelectorAll('.experience-level-checkbox'))
+            .filter(checkbox => checkbox.checked)
+            .map(checkbox => checkbox.value);
+
         // Save to Firestore
         await db.collection('users').doc(user.uid).update({
             preferences: selectedCompanies,
             jobTypes: selectedJobTypes,
+            experienceLevels: selectedExperienceLevels,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
@@ -193,6 +199,13 @@ async function loadPreferences() {
             if (data.jobTypes) {
                 document.querySelectorAll('.job-type-checkbox').forEach(checkbox => {
                     checkbox.checked = data.jobTypes.includes(checkbox.value);
+                });
+            }
+
+            // Load experience level preferences
+            if (data.experienceLevels) {
+                document.querySelectorAll('.experience-level-checkbox').forEach(checkbox => {
+                    checkbox.checked = data.experienceLevels.includes(checkbox.value);
                 });
             }
         }

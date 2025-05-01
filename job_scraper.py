@@ -46,7 +46,8 @@ def scrape_jobs():
             user_data.get('email')):
             user_preferences[user_data['email']] = {
                 'companies': preferences,
-                'jobTypes': job_types
+                'jobTypes': job_types,
+                'experienceLevels': user_data.get('experienceLevels', [])  # Get experience level preferences
             }
     
     # Scrape Greenhouse jobs
@@ -75,18 +76,19 @@ def scrape_jobs():
                 # Add to database
                 db.collection('jobs').add(job_doc)
                 all_new_jobs.append(job)
-                print(f"Added new job: {job['title']} at {job['company']} (ID: {job['job_id']}) - Last Updated {job['hours_ago']} hours ago")
+                print(f"Added new job: {job['title']} at {job['company']} (ID: {job['job_id']}) {job['experience_level']}- Last Updated {job['hours_ago']} hours ago")
     
     # Send personalized emails to each verified user based on their preferences
     verified_users = len(user_preferences)
     print(f"\nFound {verified_users} verified users with preferences")
     
     for email, prefs in user_preferences.items():
-        # Filter jobs based on user preferences (both company and job type)
+        # Filter jobs based on user preferences (company, job type, and experience level)
         user_jobs = [
             job for job in all_new_jobs 
             if job['company'].lower() in prefs['companies'] and 
-            job['role_type'] in prefs['jobTypes']
+            job['role_type'] in prefs['jobTypes'] and
+            job['experience_level'] in prefs['experienceLevels']  # Add experience level filter
         ]
         
         # Always send email notification, even if no new jobs
