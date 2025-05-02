@@ -5,7 +5,9 @@ import os
 import time
 from typing import List, Dict
 from dateutil import parser
-from dateutil.tz import tzutc  # Add this import
+from dateutil.tz import tzutc 
+from analyze_locations import identify_country
+import re
 
 def is_product_role(title):
     """Check if a job title is a product management role"""
@@ -178,6 +180,52 @@ def is_ml_engineer_role(title):
     title_lower = title.lower()
     return any(keyword in title_lower for keyword in ml_keywords)
 
+def is_ux_researcher_role(title):
+    """Check if a job title is a UX Researcher role"""
+    ux_researcher_keywords = [
+        'ux researcher',
+        'ui researcher',
+        'user researcher',
+        'user experience researcher',
+        'user interface researcher',
+        'uxr',
+        'ux research',
+        'ui research',
+        'user research',
+        'product research',
+        'product researcher'
+    ]
+    
+    if not title:
+        return False
+        
+    title_lower = title.lower()
+    return any(keyword in title_lower for keyword in ux_researcher_keywords)
+
+def is_ui_designer_role(title):
+    """Check if a job title is a UX Researcher role"""
+    ui_designer_keywords = [
+        'User Interface Designer',
+        'UI Designer',
+        'Product Designer',
+        'Frontend Designer',
+        'UX Designer',
+        'Interaction Designer',
+        'UI/UX Designer',
+        'UX/ UI Designer',
+        'Web Designer',
+        'UI/UX Developer'
+        'UX/UI Developer'
+        'UI Developer',
+        'UX Developer'
+    ]
+    
+    if not title:
+        return False
+        
+    title_lower = title.lower()
+    return any(keyword in title_lower for keyword in ui_designer_keywords)
+
 def get_role_type(title):
     """Determine the role type based on the job title"""
     if is_product_role(title):
@@ -198,6 +246,10 @@ def get_role_type(title):
         return 'swe'
     elif is_sre_engineer_role(title):
         return 'sre'
+    elif is_ux_researcher_role(title):
+        return 'uxresearcher'
+    elif is_ui_designer_role(title):
+        return 'uidesigner'
     return None
 
 def parse_greenhouse_date(date_str: str) -> datetime:
@@ -257,7 +309,7 @@ def scrape_greenhouse_jobs(company_name: str, board_token: str, experience_level
         experience_levels: List of experience levels to filter by (e.g., ['junior', 'mid-level'])
     """
     url = f"https://boards-api.greenhouse.io/v1/boards/{board_token}/jobs"
-    last_24h = datetime.now(tzutc()) - timedelta(hours=24)
+    last_6h = datetime.now(tzutc()) - timedelta(hours=6)
 
     try:
         response = requests.get(url)
@@ -269,7 +321,6 @@ def scrape_greenhouse_jobs(company_name: str, board_token: str, experience_level
         for job in jobs_data:
             title = job.get('title', 'N/A')
             
-            # Skip if not a product/program role
             role_type = get_role_type(title)
             if not role_type:
                 continue
@@ -284,7 +335,7 @@ def scrape_greenhouse_jobs(company_name: str, board_token: str, experience_level
             # Parse and check update time
             updated_at_str = job.get('updated_at', '')
             updated_at = parse_greenhouse_date(updated_at_str)
-            if not updated_at or updated_at <= last_24h:
+            if not updated_at or updated_at <= last_6h:
                 continue
                 
             try:
@@ -294,14 +345,51 @@ def scrape_greenhouse_jobs(company_name: str, board_token: str, experience_level
 
             location = job.get('location', {}).get('name', 'N/A')
 
+            # Analyze location for countries
+            # Handle multiple locations (separated by semicolons)
+            if ';' in location:
+                locations = [loc.strip() for loc in location.split(';')]
+                countries = set()  # Using set to automatically handle duplicates
+                for loc in locations:
+                    # Check if location contains both Remote and country info
+                    if 'remote' in loc.lower():
+                        countries.add('Remote')
+                        # Remove 'remote' from the string to check for country
+                        loc = re.sub(r'remote,?\s*', '', loc, flags=re.IGNORECASE).strip()
+                        if loc:
+                            country = identify_country(loc)
+                            if country != 'Unknown':
+                                countries.add(country)
+                    else:
+                        country = identify_country(loc)
+                        if country != 'Unknown':
+                            countries.add(country)
+            else:
+                # Handle single location
+                if 'remote' in location.lower():
+                    countries = {'Remote'}
+                    # Remove 'remote' from the string to check for country
+                    loc = re.sub(r'remote,?\s*', '', location, flags=re.IGNORECASE).strip()
+                    if loc:
+                        country = identify_country(loc)
+                        if country != 'Unknown':
+                            countries.add(country)
+                else:
+                    country = identify_country(location)
+                    countries = {country} if country != 'Unknown' else set()
+
             # Format the update time for display
             time_ago = datetime.now(tzutc()) - updated_at
             hours_ago = round(time_ago.total_seconds() / 3600, 1)
+
+            # Convert countries set to a map with numeric indices
+            countries_map = {str(i): country for i, country in enumerate(sorted(countries))}
 
             job_info = {
                 'company': company_name.title(),
                 'title': title,
                 'location': location,
+                'countries': countries_map,  # Store as map with numeric indices
                 'department': department,
                 'job_id': f"{company_name}_{job.get('id', 'N/A')}",
                 'hours_ago': hours_ago,
@@ -333,7 +421,7 @@ def main():
     total_companies = len(all_companies)
     all_jobs = []
 
-    print(f"Checking {total_companies} companies for jobs posted/updated in the last 24 hours...")
+    print(f"Checking {total_companies} companies for jobs posted/updated in the last 6 hours...")
 
     # Scrape jobs from each company
     for idx, (company_name, board_token) in enumerate(all_companies.items(), 1):
@@ -348,19 +436,20 @@ def main():
             time.sleep(1.0)
 
     if not all_jobs:
-        print("\nNo new jobs found in the last 24 hours.")
+        print("\nNo new jobs found in the last 6 hours.")
         return
 
     # Sort jobs by update time (most recent first)
     all_jobs.sort(key=lambda x: x['hours_ago'])
 
     # Print all jobs
-    print("\nJobs Updated in Last 24 Hours:")
+    print("\nJobs Updated in Last 6 Hours:")
     print("=" * 80)
     for job in all_jobs:
         print(f"\nCompany: {job['company']}")
         print(f"Title: {job['title']}")
         print(f"Location: {job['location']}")
+        print(f"Countries: {', '.join(job['countries'].values())}")
         print(f"Department: {job['department']}")
         print(f"Experience Level: {job['experience_level']}")
         print(f"Updated: {job['updated_at']} ({job['hours_ago']} hours ago)")

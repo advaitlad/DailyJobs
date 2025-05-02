@@ -212,10 +212,10 @@ def send_email_notification(jobs, recipient_email):
     msg['To'] = recipient_email
     
     if jobs:
-        msg['Subject'] = f"New Job Openings Found ({len(jobs)} positions)"
+        msg['Subject'] = f"PingMeJobs Found {len(jobs)} positions"
         
         # Create both plain text and HTML versions
-        text_content = "New Job positions found:\n\n"
+        text_content = "New Job positions found in the last 6 hours:\n\n"
         for job in jobs:
             text_content += f"Company: {job['company']}\n"
             text_content += f"Position: {job['title']}\n"
