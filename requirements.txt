@@ -1,6 +1,7 @@
 firebase-admin==6.2.0
-requests==2.31.0
+requests==2.32.3
 beautifulsoup4==4.12.2
 python-dotenv==1.0.0
 schedule==1.2.0
 python-dateutil
+pycountry==22.3.5
