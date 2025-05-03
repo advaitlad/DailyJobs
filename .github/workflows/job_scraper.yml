@@ -2,7 +2,12 @@ name: Job Scraper Workflow
 
 on:
   schedule:
-    - cron: '0 */6 * * *'  # Runs every 6 hours
+    - cron: '0 4,10,16,22 * * *' 
+    # Runs every 6 hours starting 8 AM PST
+    #2 AM PST = 10:00 UTC
+    # 8 AM PST = 16:00 UTC
+    # 2 PM PST = 22:00 UTC
+    # 8 PM PST = 04:00 UTC
   workflow_dispatch:        # Allows manual trigger from GitHub UI
 
 jobs:
