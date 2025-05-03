@@ -3,7 +3,7 @@
     --primary-hover: #1955d4;
     --secondary-color: #757575;
     --danger-color: #D32F2F;
-    --success-color: #43b548;
+    --success-color: #3a9a3f;
     --background-color: #f8f9fa;
     --border-color: #E0E0E0;
     --text-primary: #1A1A1A;
@@ -291,7 +291,7 @@ body {
 }
 
 .user-details {
-    margin-bottom: 2rem;
+    margin-bottom: 0.1rem;
     padding-bottom: 2rem;
     border-bottom: 1px solid var(--border-color);
 }
@@ -1235,4 +1235,58 @@ input[type="checkbox"]:checked::after {
         min-width: unset;
         padding: 0.5rem 0.75rem;
     }
+}
+
+/* Sidebar index styles */
+.sidebar-index {
+    margin: 0.5rem 0 0.5rem 0;
+    padding: 0;
+}
+
+.sidebar-index-label {
+    margin-bottom: 0.75rem;
+    color: #888;
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+}
+
+.sidebar-index ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.sidebar-index li {
+    margin: 0;
+    padding: 0;
+}
+
+.sidebar-link {
+    display: block;
+    padding: 0.6rem 1.2rem;
+    border-radius: 2rem;
+    color: #2061b1;
+    background: #f4f7fb;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1rem;
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+    box-shadow: none;
+}
+
+.sidebar-link:hover {
+    background: #e3ecfa;
+    color: #174a8b;
+    box-shadow: 0 2px 8px rgba(32, 97, 177, 0.08);
+}
+
+.sidebar-link.active {
+    background: linear-gradient(90deg, #1a73e8 0%, #43b548 100%);
+    color: #fff;
+    font-weight: 600;
+    box-shadow: 0 4px 16px rgba(26, 115, 232, 0.10);
 }

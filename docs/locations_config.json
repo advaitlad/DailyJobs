@@ -1,0 +1,32 @@
+{
+    "locations": {
+        "Remote": {
+            "name": "Remote",
+            "description": "Work from anywhere"
+        },
+        "United States": {
+            "name": "United States",
+            "description": "Jobs in the United States"
+        },
+        "Canada": {
+            "name": "Canada",
+            "description": "Jobs in Canada"
+        },
+        "United Kingdom": {
+            "name": "United Kingdom",
+            "description": "Jobs in the United Kingdom"
+        },
+        "India": {
+            "name": "India",
+            "description": "Jobs in India"
+        },
+        "Australia": {
+            "name": "Australia",
+            "description": "Jobs in Australia"
+        },
+        "Germany": {
+            "name": "Germany",
+            "description": "Jobs in Germany"
+        }
+    }
+}

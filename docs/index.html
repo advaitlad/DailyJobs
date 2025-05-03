@@ -135,6 +135,18 @@
                     <h2 id="userDisplayName">User</h2>
                     <p id="userEmail">user@example.com</p>
                 </div>
+                <div class="sidebar-index" id="sidebar-index">
+                    <div class="sidebar-index-label"
+                        style="margin-bottom: 0.5rem; color: #888; font-size: 1.1rem; font-weight: 500; letter-spacing: 0.01em;">
+                        Navigate to:</div>
+                    <ul>
+                        <li><a href="#job-categories-section" class="sidebar-link">Job Categories</a></li>
+                        <li><a href="#experience-level-section" class="sidebar-link">Experience Level</a></li>
+                        <li><a href="#location-preferences-section" class="sidebar-link">Location</a></li>
+                        <li><a href="#selected-companies-section" class="sidebar-link">Selected Companies</a></li>
+                        <li><a href="#available-companies-section" class="sidebar-link">Available Companies</a></li>
+                    </ul>
+                </div>
                 <div class="action-buttons">
                     <button class="btn btn-secondary" id="sign-out">Sign Out</button>
                 </div>
@@ -155,11 +167,10 @@
                     <div id="preferences-message" class="message"></div>
 
                     <!-- Job Type Preferences -->
-                    <div class="preferences-section">
+                    <div class="preferences-section" id="job-categories-section">
                         <div class="section-header">
                             <div class="header-main">
-                                <h4>Job Categories <span class="hover-instruction">(Please
-                                        select at least one category to start receiving emails. Hover on the<span
+                                <h4>Job Categories <span class="hover-instruction">(Hover on the<span
                                             class="info-icon">?</span>
                                         icon to find what
                                         roles are included in the category)</span></h4>
@@ -363,11 +374,10 @@
                     </div>
 
                     <!-- Experience Level Section -->
-                    <div class="preferences-section">
+                    <div class="preferences-section" id="experience-level-section">
                         <div class="section-header">
                             <div class="header-main">
-                                <h4>Experience Level <span class="hover-instruction">(Please
-                                        select at least one level to start receiving emails. Hover on the<span
+                                <h4>Experience Level <span class="hover-instruction">(Hover on the<span
                                             class="info-icon">?</span>
                                         icon to find what
                                         titles are included in each level)</span></h4>
@@ -436,7 +446,24 @@
                         </div>
                     </div>
 
-                    <div class="companies-section">
+                    <!-- Location Preferences Section -->
+                    <div class="preferences-section" id="location-preferences-section">
+                        <div class="section-header">
+                            <div class="header-main">
+                                <h4>Location Preferences <span class="hover-instruction">(Select countries where you'd
+                                        like to work)</span></h4>
+                            </div>
+                        </div>
+                        <div class="job-categories">
+                            <div class="category-group">
+                                <div class="job-types-grid" id="location-types-grid">
+                                    <!-- Location checkboxes will be dynamically added here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="companies-section" id="selected-companies-section">
                         <div class="section-header">
                             <div class="header-main">
                                 <h4>Selected Companies <span class="count" id="selected-count">0</span></h4>
@@ -449,7 +476,7 @@
                         </div>
                     </div>
 
-                    <div class="companies-section">
+                    <div class="companies-section" id="available-companies-section">
                         <div class="section-header">
                             <div class="header-main">
                                 <h4>Available Companies <span class="count" id="available-count">0</span></h4>

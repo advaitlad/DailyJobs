@@ -41,13 +41,12 @@ def scrape_jobs():
         # Only include verified users with non-empty preferences and email
         preferences = user_data.get('preferences', [])
         job_types = user_data.get('jobTypes', [])  # Default to empty array if not specified
-        if (user_data.get('emailVerified', False) and 
-            preferences and  # This checks if preferences is non-empty
-            user_data.get('email')):
+        if (user_data.get('emailVerified', False) and preferences and user_data.get('email')):
             user_preferences[user_data['email']] = {
                 'companies': preferences,
                 'jobTypes': job_types,
-                'experienceLevels': user_data.get('experienceLevels', [])  # Get experience level preferences
+                'experienceLevels': user_data.get('experienceLevels', []),  # Get experience level preferences
+                'locationPreferences': user_data.get('locationPreferences', [])  # Get location preferences
             }
     
     # Scrape Greenhouse jobs
@@ -83,13 +82,8 @@ def scrape_jobs():
     print(f"\nFound {verified_users} verified users with preferences")
     
     for email, prefs in user_preferences.items():
-        # Filter jobs based on user preferences (company, job type, and experience level)
-        user_jobs = [
-            job for job in all_new_jobs 
-            if job['company'].lower() in prefs['companies'] and 
-            job['role_type'] in prefs['jobTypes'] and
-            job['experience_level'] in prefs['experienceLevels']  # Add experience level filter
-        ]
+        # Filter jobs based on user preferences (company, job type, location and experience level)
+        user_jobs = filter_jobs_for_user(all_new_jobs, prefs)
         
         # Always send email notification, even if no new jobs
         send_email_notification(user_jobs, email)
@@ -102,6 +96,41 @@ def scrape_jobs():
         print(f"\nFound {len(all_new_jobs)} new jobs in total!")
     else:
         print("\nNo new jobs found.")
+
+def filter_jobs_for_user(jobs, user_preferences):
+    """Filter jobs based on user preferences."""
+    filtered_jobs = []
+    
+    for job in jobs:
+        # Check company preference
+        if user_preferences.get('companies') and job['company'].lower() not in user_preferences['companies']:
+            continue
+            
+        # Check job type preference
+        if user_preferences.get('jobTypes') and job['role_type'] not in user_preferences['jobTypes']:
+            continue
+            
+        # Check experience level preference
+        if user_preferences.get('experienceLevels') and job['experience_level'] not in user_preferences['experienceLevels']:
+            continue
+            
+        # Check location preference
+        if user_preferences.get('locationPreferences'):
+            # If "Any Location" is selected, skip location filtering
+            if 'any' in user_preferences['locationPreferences']:
+                filtered_jobs.append(job)
+                continue
+                
+            job_countries = job.get('countries', [])
+            user_locations = user_preferences['locationPreferences']
+            
+            # If job has no countries or none match user preferences, skip
+            if not job_countries or not any(country in user_locations for country in job_countries):
+                continue
+        
+        filtered_jobs.append(job)
+    
+    return filtered_jobs
 
 def create_html_table(jobs):
     """Create an HTML table for the jobs"""
