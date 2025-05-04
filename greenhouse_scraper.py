@@ -415,56 +415,56 @@ def load_companies() -> Dict[str, str]:
     with open(config_path, 'r') as f:
         return json.load(f)['companies']
 
-def main():
-    # Load all companies from config
-    all_companies = load_companies()
-    total_companies = len(all_companies)
-    all_jobs = []
+# def main():
+#     # Load all companies from config
+#     all_companies = load_companies()
+#     total_companies = len(all_companies)
+#     all_jobs = []
 
-    print(f"Checking {total_companies} companies for jobs posted/updated in the last 6 hours...")
+#     print(f"Checking {total_companies} companies for jobs posted/updated in the last 6 hours...")
 
-    # Scrape jobs from each company
-    for idx, (company_name, board_token) in enumerate(all_companies.items(), 1):
-        print(f"\nChecking {company_name.title()} ({idx}/{total_companies})...")
-        jobs = scrape_greenhouse_jobs(company_name, board_token)
-        if jobs:
-            all_jobs.extend(jobs)
-            print(f"Found {len(jobs)} new jobs")
+#     # Scrape jobs from each company
+#     for idx, (company_name, board_token) in enumerate(all_companies.items(), 1):
+#         print(f"\nChecking {company_name.title()} ({idx}/{total_companies})...")
+#         jobs = scrape_greenhouse_jobs(company_name, board_token)
+#         if jobs:
+#             all_jobs.extend(jobs)
+#             print(f"Found {len(jobs)} new jobs")
             
-        # Add delay between requests to avoid rate limiting
-        if idx < total_companies:
-            time.sleep(1.0)
+#         # Add delay between requests to avoid rate limiting
+#         if idx < total_companies:
+#             time.sleep(1.0)
 
-    if not all_jobs:
-        print("\nNo new jobs found in the last 6 hours.")
-        return
+#     if not all_jobs:
+#         print("\nNo new jobs found in the last 6 hours.")
+#         return
 
-    # Sort jobs by update time (most recent first)
-    all_jobs.sort(key=lambda x: x['hours_ago'])
+#     # Sort jobs by update time (most recent first)
+#     all_jobs.sort(key=lambda x: x['hours_ago'])
 
-    # Print all jobs
-    print("\nJobs Updated in Last 6 Hours:")
-    print("=" * 80)
-    for job in all_jobs:
-        print(f"\nCompany: {job['company']}")
-        print(f"Title: {job['title']}")
-        print(f"Location: {job['location']}")
-        print(f"Countries: {', '.join(job['countries'].values())}")
-        print(f"Department: {job['department']}")
-        print(f"Experience Level: {job['experience_level']}")
-        print(f"Updated: {job['updated_at']} ({job['hours_ago']} hours ago)")
-        print(f"URL: {job['url']}")
-        print("-" * 80)
+#     # Print all jobs
+#     print("\nJobs Updated in Last 6 Hours:")
+#     print("=" * 80)
+#     for job in all_jobs:
+#         print(f"\nCompany: {job['company']}")
+#         print(f"Title: {job['title']}")
+#         print(f"Location: {job['location']}")
+#         print(f"Countries: {', '.join(job['countries'].values())}")
+#         print(f"Department: {job['department']}")
+#         print(f"Experience Level: {job['experience_level']}")
+#         print(f"Updated: {job['updated_at']} ({job['hours_ago']} hours ago)")
+#         print(f"URL: {job['url']}")
+#         print("-" * 80)
 
-    # Print summary
-    print("\nSummary:")
-    print(f"Total new jobs found: {len(all_jobs)}")
-    companies_with_jobs = {}
-    for job in all_jobs:
-        companies_with_jobs[job['company']] = companies_with_jobs.get(job['company'], 0) + 1
+#     # Print summary
+#     print("\nSummary:")
+#     print(f"Total new jobs found: {len(all_jobs)}")
+#     companies_with_jobs = {}
+#     for job in all_jobs:
+#         companies_with_jobs[job['company']] = companies_with_jobs.get(job['company'], 0) + 1
     
-    for company, count in sorted(companies_with_jobs.items()):
-        print(f"{company}: {count} new jobs")
+#     for company, count in sorted(companies_with_jobs.items()):
+#         print(f"{company}: {count} new jobs")
 
 if __name__ == "__main__":
-    main() 
+    pass 

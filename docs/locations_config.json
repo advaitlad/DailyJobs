@@ -1,32 +1,37 @@
 {
     "locations": {
         "Remote": {
-            "name": "Remote",
-            "description": "Work from anywhere"
+            "name": "Remote"
         },
         "United States": {
-            "name": "United States",
-            "description": "Jobs in the United States"
+            "name": "United States"
         },
         "Canada": {
-            "name": "Canada",
-            "description": "Jobs in Canada"
+            "name": "Canada"
         },
         "United Kingdom": {
-            "name": "United Kingdom",
-            "description": "Jobs in the United Kingdom"
+            "name": "United Kingdom"
         },
         "India": {
-            "name": "India",
-            "description": "Jobs in India"
+            "name": "India"
         },
         "Australia": {
-            "name": "Australia",
-            "description": "Jobs in Australia"
+            "name": "Australia"
         },
         "Germany": {
-            "name": "Germany",
-            "description": "Jobs in Germany"
+            "name": "Germany"
+        },
+        "Ireland": {
+            "name": "Ireland"
+        },
+        "Mexico": {
+            "name": "Mexico"
+        },
+        "Spain": {
+            "name": "Spain"
+        },
+        "Singapore": {
+            "name": "Singapore"
         }
     }
 }

@@ -181,9 +181,9 @@ async function savePreferences() {
     }
 
     try {
-        // Get selected companies
-        const selectedCompanies = Array.from(document.querySelectorAll('#selected-companies .company-item'))
-            .map(item => item.dataset.company.toLowerCase());
+        // Get selected companies (fix: use checked checkboxes)
+        const selectedCompanies = Array.from(document.querySelectorAll('.company-checkbox:checked'))
+            .map(checkbox => checkbox.value.toLowerCase());
 
         // Get selected job types
         const selectedJobTypes = Array.from(document.querySelectorAll('.job-type-checkbox:checked'))

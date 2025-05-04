@@ -82,11 +82,20 @@ def scrape_jobs():
     print(f"\nFound {verified_users} verified users with preferences")
     
     for email, prefs in user_preferences.items():
-        # Filter jobs based on user preferences (company, job type, location and experience level)
+        # Get the user's name (first word only)
+        user_name = None
+        user_doc = db.collection('users').where('email', '==', email).get()
+        if user_doc:
+            user_data = user_doc[0].to_dict()
+            name = user_data.get('name', '').strip()
+            if name:
+                user_name = name.split()[0]
+        if not user_name:
+            user_name = 'there'
+        # Filter jobs based on user preferences (company, job type, and experience level)
         user_jobs = filter_jobs_for_user(all_new_jobs, prefs)
-        
         # Always send email notification, even if no new jobs
-        send_email_notification(user_jobs, email)
+        send_email_notification(user_jobs, email, user_name)
         if user_jobs:
             print(f"Sent notification to {email} with {len(user_jobs)} matching jobs")
         else:
@@ -132,40 +141,49 @@ def filter_jobs_for_user(jobs, user_preferences):
     
     return filtered_jobs
 
-def create_html_table(jobs):
-    """Create an HTML table for the jobs"""
-    html = """
+def create_html_table(jobs, user_name=None):
+    """Create an HTML table for the jobs with a friendly intro message"""
+    intro = f"""
+    <div style='margin-bottom:1.5rem;'>
+        <p style='font-size:1.1rem; color:#222;'>
+            Hello {user_name or 'there'},<br><br>
+            We're always on the lookout for the freshest roles, so you don't have to be.<br>
+            Here are roles that PingMeJobs found in the last 6 hours that match your preferences.<br>
+            <b>Check them out and apply early to get ahead of the crowd!</b>
+        </p>
+    </div>
+    """
+    html = f"""
     <html>
     <head>
-    <div><h1>Job Openings Updated in the Last 6 Hours</h1></div>
     <style>
-        table {
+        table {{
             border-collapse: collapse;
             width: 100%;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-        }
-        th {
+        }}
+        th {{
             background-color: #2E7D32;
             color: white;
             text-align: left;
             padding: 16px;
             font-size: 14px;
             font-weight: 600;
-        }
-        td {
+        }}
+        td {{
             padding: 16px;
             border-bottom: 1px solid #E0E0E0;
             font-size: 14px;
             line-height: 1.4;
-        }
-        .company-header {
+        }}
+        .company-header {{
             background-color: #F5F5F5;
             font-weight: 600;
             padding: 16px;
             font-size: 16px;
             color: #1A1A1A;
-        }
-        .apply-button {
+        }}
+        .apply-button {{
             background-color: #43b548;
             color: white !important;
             padding: 10px 20px;
@@ -179,21 +197,22 @@ def create_html_table(jobs):
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             text-align: center;
             min-width: 100px;
-        }
-        .apply-button:visited {
+        }}
+        .apply-button:visited {{
             color: white !important;
-        }
-        .apply-button:hover {
+        }}
+        .apply-button:hover {{
             background-color: #1B5E20;
             box-shadow: 0 4px 8px rgba(0,0,0,0.15);
             transform: translateY(-1px);
-        }
-        tr:hover {
+        }}
+        tr:hover {{
             background-color: #F9F9F9;
-        }
+        }}
     </style>
     </head>
     <body>
+    {intro}
     <table>
         <tr>
             <th>Title</th>
@@ -232,38 +251,35 @@ def create_html_table(jobs):
     """
     return html
 
-def send_email_notification(jobs, recipient_email):
+def send_email_notification(jobs, recipient_email, user_name=None):
     sender_email = os.getenv('EMAIL_USER')
     sender_password = os.getenv('EMAIL_PASSWORD')
-    
     msg = MIMEMultipart('alternative')
     msg['From'] = sender_email
     msg['To'] = recipient_email
-    
     if jobs:
         msg['Subject'] = f"PingMeJobs Found {len(jobs)} positions"
-        
         # Create both plain text and HTML versions
-        text_content = "New Job positions found in the last 6 hours:\n\n"
+        text_content = (
+            f"Hi {user_name},\n\n"
+            f"We're always on the lookout for the freshest roles, so you don't have to be.\n"
+            f"Here are roles that PingMeJobs found in the last 6 hours that match your preferences.\n"
+            f"Check them out and apply early to get ahead of the crowd!\n\n"
+        )
         for job in jobs:
             text_content += f"Company: {job['company']}\n"
             text_content += f"Position: {job['title']}\n"
             text_content += f"Location: {job['location']}\n"
             text_content += f"Apply: {job['url']}\n"
             text_content += "-" * 50 + "\n\n"
-        
-        # Create HTML version with updated URL field
-        html_content = create_html_table(jobs)
-        
-        # Attach both versions
+        html_content = create_html_table(jobs, user_name)
         msg.attach(MIMEText(text_content, 'plain'))
         msg.attach(MIMEText(html_content, 'html'))
     else:
         msg['Subject'] = "Jobs Update - No New Positions"
-        body = "No new positions were updated in the last 6 hours.\n\n"
+        body = "No new positions were updated in the last 6 hours that match your preferences. We'll keep looking 👀\n\n"
         body += "Keep checking back for new opportunities!"
         msg.attach(MIMEText(body, 'plain'))
-    
     try:
         server = smtplib.SMTP('smtp.gmail.com', 587)
         server.starttls()

@@ -276,52 +276,5 @@ def fetch_jobs(company_name: str, board_token: str, max_retries: int = 3) -> Lis
     
     return []
 
-# def analyze_pm_locations():
-#     companies = load_companies()
-#     results = []
-    
-#     print("Analyzing Product Manager locations...")
-    
-#     # Process companies in parallel
-#     with ThreadPoolExecutor(max_workers=10) as executor:
-#         future_to_company = {
-#             executor.submit(fetch_jobs, company_name, board_token): company_name
-#             for company_name, board_token in companies.items()
-#         }
-        
-#         for future in as_completed(future_to_company):
-#             company_name = future_to_company[future]
-#             try:
-#                 jobs_data = future.result()
-#                 for job in jobs_data:
-#                     title = job.get('title', '').lower()
-#                     if 'product manager' in title:
-#                         location = job.get('location', {}).get('name', 'N/A')
-#                         country = identify_country(location)
-#                         results.append({
-#                             'company': company_name,
-#                             'title': job.get('title', ''),
-#                             'location': location,
-#                             'country': country
-#                         })
-#             except Exception as e:
-#                 print(f"Error processing {company_name}: {e}")
-    
-#     # Print results
-#     print("\nProduct Manager Role Analysis:")
-#     print("=============================")
-#     for result in results:
-#         if result['country'] == 'Unknown':
-#             print(f"\nCompany: {result['company']}")
-#             print(f"Title: {result['title']}")
-#             print(f"Location: {result['location']}")
-#             print(f"Identified Country: {result['country']}")
-    
-#     # Print summary
-#     country_counts = Counter(r['country'] for r in results)
-#     print("\nCountry Distribution Summary:")
-#     for country, count in country_counts.most_common():
-#         print(f"{country}: {count} roles")
-
 if __name__ == "__main__":
     pass  # No main function needed as this is a utility module 
