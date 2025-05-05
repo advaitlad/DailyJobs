@@ -337,7 +337,7 @@ def scrape_greenhouse_jobs(company_name: str, board_token: str, experience_level
             updated_at = parse_greenhouse_date(updated_at_str)
             if not updated_at or updated_at <= last_6h:
                 continue
-                
+            
             try:
                 department = job.get('departments', [{}])[0].get('name', 'N/A')
             except (IndexError, KeyError):

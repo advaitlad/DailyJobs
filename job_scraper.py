@@ -130,11 +130,14 @@ def filter_jobs_for_user(jobs, user_preferences):
                 filtered_jobs.append(job)
                 continue
                 
-            job_countries = job.get('countries', [])
+            job_countries = job.get('countries', {})
             user_locations = user_preferences['locationPreferences']
             
+            # Convert job countries dictionary to list of values
+            job_countries_list = list(job_countries.values())
+            
             # If job has no countries or none match user preferences, skip
-            if not job_countries or not any(country in user_locations for country in job_countries):
+            if not job_countries_list or not any(country in user_locations for country in job_countries_list):
                 continue
         
         filtered_jobs.append(job)
@@ -147,7 +150,7 @@ def create_html_table(jobs, user_name=None):
     <div style='margin-bottom:1.5rem;'>
         <p style='font-size:1.1rem; color:#222;'>
             Hello {user_name or 'there'},<br><br>
-            We're always on the lookout for the freshest roles, so you don't have to be.<br>
+            PingMeJobs is always on the lookout for the freshest roles, so you don't have to be.<br><br>
             Here are roles that PingMeJobs found in the last 6 hours that match your preferences.<br>
             <b>Check them out and apply early to get ahead of the crowd!</b>
         </p>
