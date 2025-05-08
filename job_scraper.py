@@ -151,7 +151,7 @@ def create_html_table(jobs, user_name=None):
         <p style='font-size:1.1rem; color:#222;'>
             Hello {user_name or 'there'},<br><br>
             PingMeJobs is always on the lookout for the freshest roles, so you don't have to be.<br><br>
-            Here are roles that PingMeJobs found in the last 6 hours that match your preferences.<br>
+            Here are roles that PingMeJobs found in the last 6 hours that match your preferences.<br><br>
             <b>Check them out and apply early to get ahead of the crowd!</b>
         </p>
     </div>
