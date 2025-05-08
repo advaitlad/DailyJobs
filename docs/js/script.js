@@ -13,13 +13,13 @@ Promise.all([
     console.log('Loaded locations:', locations); // Debug log
     
     // Initialize the UI with the loaded data
-    populateCompanies();
+        populateCompanies();
     populateLocations();
-})
-.catch(error => {
+    })
+    .catch(error => {
     console.error('Error loading config files:', error);
     showMessage('Error loading configuration. Please refresh the page.', true);
-});
+    });
 
 // Populate companies grid
 function populateCompanies(selectedCompanies = [], searchTerm = '') {
@@ -207,13 +207,13 @@ async function savePreferences() {
 
         // Visual feedback: turn button green and show message
         if (saveBtn) {
-            saveBtn.classList.add('saved');
+        saveBtn.classList.add('saved');
             saveBtn.textContent = '✓ Preferences saved successfully!';
         }
         setTimeout(() => {
             if (saveBtn) {
-                saveBtn.classList.remove('saved');
-                saveBtn.textContent = 'Save Preferences';
+            saveBtn.classList.remove('saved');
+            saveBtn.textContent = 'Save Preferences';
                 saveBtn.disabled = false;
             }
         }, 2000);
