@@ -1,13 +1,18 @@
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
+from typing import List, Dict, Optional
+from dateutil import parser
+import time
+import re
 import json
 import os
-import time
-from typing import List, Dict
-from dateutil import parser
-from dateutil.tz import tzutc 
 from analyze_locations import identify_country
-import re
+
+def load_ashby_companies() -> Dict[str, str]:
+    """Load Ashby companies from config file"""
+    config_path = os.path.join('docs', 'ashby_companies_config.json')
+    with open(config_path, 'r') as f:
+        return json.load(f)['companies']
 
 def is_product_role(title):
     """Check if a job title is a product management role"""
@@ -59,71 +64,6 @@ def is_data_analyst_role(title):
     title_lower = title.lower()
     return any(keyword in title_lower for keyword in data_keywords)
 
-def is_business_analyst_role(title):
-    """Check if a job title is a business analyst role"""
-    business_keywords = [
-        'business analyst'
-    ]
-    
-    if not title:
-        return False
-        
-    title_lower = title.lower()
-    return any(keyword in title_lower for keyword in business_keywords)
-
-def is_data_scientist_role(title):
-    """Check if a job title is a data scientist role"""
-    scientist_keywords = [
-        'data scientist'
-    ]
-    
-    if not title:
-        return False
-        
-    title_lower = title.lower()
-    return any(keyword in title_lower for keyword in scientist_keywords)
-
-def is_bi_engineer_role(title):
-    """Check if a job title is a BI/Data Visualization Engineer role"""
-    bi_keywords = [
-        'business intelligence engineer',
-        'data visualization engineer',
-        'business intelligence analyst',
-        'data visualization analyst'
-        'tableau developer',
-        'power bi developer',
-        'data visualization specialist',
-        'Tableau Analyst',
-        'Power BI Analyst',
-        'Tableau Specialist',
-        'Power BI Specialist',
-        'BI Analyst',
-        'BI Engineer',
-        'Business Intelligence Analyst',
-        'data visualization analyst',
-        'Data Reporting Analyst',
-        'Business Analytics'
-    ]
-    
-    if not title:
-        return False
-        
-    title_lower = title.lower()
-    return any(keyword in title_lower for keyword in bi_keywords)
-
-def is_data_engineer_role(title):
-    """Check if a job title is a data engineering role"""
-    data_eng_keywords = [
-        'data engineer',
-        'etl engineer'
-    ]
-    
-    if not title:
-        return False
-        
-    title_lower = title.lower()
-    return any(keyword in title_lower for keyword in data_eng_keywords)
-
 def is_software_engineer_role(title):
     """Check if a job title is a software engineering role"""
     swe_keywords = [
@@ -147,25 +87,8 @@ def is_software_engineer_role(title):
     title_lower = title.lower()
     return any(keyword in title_lower for keyword in swe_keywords)
 
-def is_sre_engineer_role(title):
-    """Check if a job title is a software engineering role"""
-    sre_keywords = [
-        'sre engineer',
-        'site reliability engineer',
-        'site reliability',
-        'sre',
-        'site reliability',
-        'DevOps Engineer'
-    ]
-    
-    if not title:
-        return False
-        
-    title_lower = title.lower()
-    return any(keyword in title_lower for keyword in sre_keywords)
-
 def is_ml_engineer_role(title):
-    """Check if a job title is a software engineering role"""
+    """Check if a job title is a machine learning engineering role"""
     ml_keywords = [
         'machine learning engineer',
         'ml engineer',
@@ -203,7 +126,7 @@ def is_ux_researcher_role(title):
     return any(keyword in title_lower for keyword in ux_researcher_keywords)
 
 def is_ui_designer_role(title):
-    """Check if a job title is a UX Researcher role"""
+    """Check if a job title is a UI Designer role"""
     ui_designer_keywords = [
         'User Interface Designer',
         'UI Designer',
@@ -234,34 +157,18 @@ def get_role_type(title):
         return 'program'
     elif is_data_analyst_role(title):
         return 'data'
-    elif is_business_analyst_role(title):
-        return 'business'
-    elif is_data_scientist_role(title):
-        return 'scientist'
-    elif is_bi_engineer_role(title):
-        return 'bi'
-    elif is_data_engineer_role(title):
-        return 'dataeng'
     elif is_software_engineer_role(title):
         return 'swe'
-    elif is_sre_engineer_role(title):
-        return 'sre'
+    elif is_ml_engineer_role(title):
+        return 'ml'
     elif is_ux_researcher_role(title):
         return 'uxresearcher'
     elif is_ui_designer_role(title):
         return 'uidesigner'
     return None
 
-def parse_greenhouse_date(date_str: str) -> datetime:
-    """Parse datetime from Greenhouse API which can be in different formats"""
-    try:
-        return parser.parse(date_str)
-    except (ValueError, TypeError) as e:
-        print(f"Error parsing date '{date_str}': {e}")
-        return None
-
-def get_experience_level(title):
-    """Efficiently determine experience level from job title"""
+def get_experience_level(title: str) -> str:
+    """Extract experience level from job title"""
     if not title:
         return 'unknown'
         
@@ -300,27 +207,34 @@ def get_experience_level(title):
     # Default to mid-level for ambiguous titles
     return 'mid-level'
 
-def scrape_greenhouse_jobs(company_name: str, board_token: str, experience_levels: List[str] = None) -> List[Dict]:
-    """Generic function to scrape jobs from any Greenhouse board
+def scrape_ashby_jobs(company_name: str, board_token: str, experience_levels: Optional[List[str]] = None) -> List[Dict]:
+    """Generic function to scrape jobs from any Ashby board
 
     Args:
-        company_name: Name of the company (e.g., 'pinterest', 'stripe')
-        board_token: The board token from the company's Greenhouse URL
+        company_name: Name of the company (e.g., 'notion', 'openai')
+        board_token: The board token from the company's Ashby URL
         experience_levels: List of experience levels to filter by (e.g., ['junior', 'mid-level'])
     """
-    url = f"https://boards-api.greenhouse.io/v1/boards/{board_token}/jobs"
-    last_6h = datetime.now(tzutc()) - timedelta(hours=6)
+    url = f"https://api.ashbyhq.com/posting-api/job-board/{board_token}?includeCompensation=true"
+    current_time = datetime.now(timezone.utc)
+    last_6h = current_time - timedelta(hours=6)  # Calculate timestamp from 6 hours ago
 
     try:
         response = requests.get(url)
         response.raise_for_status()
+        #print(f"Response status code: {response.status_code}")
+        #print(f"Response keys: {response.json().keys()}")
 
-        jobs_data = response.json()['jobs']
+        job_postings = response.json().get('jobs', [])
+        #print(f"Found {len(job_postings)} job postings")
+
         processed_jobs = []
 
-        for job in jobs_data:
-            title = job.get('title', 'N/A')
+        for job in job_postings:
+            # Extract basic job details
+            title = job.get('title', '')
             
+            # Get role type and skip if not matching our categories
             role_type = get_role_type(title)
             if not role_type:
                 continue
@@ -332,29 +246,27 @@ def scrape_greenhouse_jobs(company_name: str, board_token: str, experience_level
             if experience_levels and experience_level not in experience_levels:
                 continue
             
-            # Parse and check update time
-            updated_at_str = job.get('updated_at', '')
-            updated_at = parse_greenhouse_date(updated_at_str)
-            if not updated_at or updated_at <= last_6h:
+            # Parse and check published time
+            published_date = parser.parse(job.get('publishedAt', ''))
+            if not published_date or published_date <= last_6h:  # Skip jobs older than 6 hours
                 continue
             
-            try:
-                department = job.get('departments', [{}])[0].get('name', 'N/A')
-            except (IndexError, KeyError):
-                department = 'N/A'
+            department = job.get('department', '')
+            location = job.get('location', 'Remote')
+            
+            # Calculate hours ago
+            hours_ago = int((current_time - published_date).total_seconds() / 3600)
 
-            location = job.get('location', {}).get('name', 'N/A')
+            # Get job URL
+            job_url = job.get('jobUrl', '')
 
             # Analyze location for countries
-            # Handle multiple locations (separated by semicolons)
+            countries = set()
             if ';' in location:
                 locations = [loc.strip() for loc in location.split(';')]
-                countries = set()  # Using set to automatically handle duplicates
                 for loc in locations:
-                    # Check if location contains both Remote and country info
                     if 'remote' in loc.lower():
                         countries.add('Remote')
-                        # Remove 'remote' from the string to check for country
                         loc = re.sub(r'remote,?\s*', '', loc, flags=re.IGNORECASE).strip()
                         if loc:
                             country = identify_country(loc)
@@ -365,10 +277,8 @@ def scrape_greenhouse_jobs(company_name: str, board_token: str, experience_level
                         if country != 'Unknown':
                             countries.add(country)
             else:
-                # Handle single location
                 if 'remote' in location.lower():
-                    countries = {'Remote'}
-                    # Remove 'remote' from the string to check for country
+                    countries.add('Remote')
                     loc = re.sub(r'remote,?\s*', '', location, flags=re.IGNORECASE).strip()
                     if loc:
                         country = identify_country(loc)
@@ -376,44 +286,57 @@ def scrape_greenhouse_jobs(company_name: str, board_token: str, experience_level
                             countries.add(country)
                 else:
                     country = identify_country(location)
-                    countries = {country} if country != 'Unknown' else set()
-
-            # Format the update time for display
-            time_ago = datetime.now(tzutc()) - updated_at
-            hours_ago = round(time_ago.total_seconds() / 3600, 1)
+                    if country != 'Unknown':
+                        countries.add(country)
 
             # Convert countries set to a map with numeric indices
             countries_map = {str(i): country for i, country in enumerate(sorted(countries))}
 
-            job_info = {
+            # Create job entry
+            job_entry = {
                 'company': company_name.title(),
                 'title': title,
                 'location': location,
-                'countries': countries_map,  # Store as map with numeric indices
+                'countries': countries_map,
                 'department': department,
                 'job_id': f"{company_name}_{job.get('id', 'N/A')}",
                 'hours_ago': hours_ago,
-                'url': job.get('absolute_url', 'N/A'),
+                'url': job_url,
                 'role_type': role_type,
-                'updated_at': updated_at,
+                'published_at': published_date,
                 'experience_level': experience_level
             }
-            processed_jobs.append(job_info)
+
+            processed_jobs.append(job_entry)
 
         return processed_jobs
 
     except requests.exceptions.RequestException as e:
-        print(f"Error fetching jobs for {company_name}: {e}")
+        print(f"Error fetching jobs: {str(e)}")
         return []
-    except (KeyError, ValueError) as e:
-        print(f"Error processing jobs for {company_name}: {e}")
+    except Exception as e:
+        print(f"Error processing jobs data: {str(e)}")
         return []
 
-def load_companies() -> Dict[str, str]:
-    """Load companies from config file"""
-    config_path = os.path.join('docs', 'greenhouse_companies_config.json')
-    with open(config_path, 'r') as f:
-        return json.load(f)['companies']
+def scrape_all_ashby_jobs(experience_levels: Optional[List[str]] = None) -> List[Dict]:
+    """Scrape jobs from all Ashby companies in the config file
 
-if __name__ == "__main__":
-    pass 
+    Args:
+        experience_levels: List of experience levels to filter by (e.g., ['junior', 'mid-level'])
+    """
+    companies = load_ashby_companies()
+    all_jobs = []
+    
+    for company_name, board_token in companies.items():
+        print(f"\nScraping jobs from {company_name.title()}...")
+        jobs = scrape_ashby_jobs(company_name, board_token, experience_levels)
+        if jobs:
+            all_jobs.extend(jobs)
+            #print(f"Found {len(jobs)} jobs")
+        else:
+            print("No jobs found or there was an error fetching jobs.")
+        
+        # Add delay between requests to avoid rate limiting
+        time.sleep(1.0)
+    
+    return all_jobs 

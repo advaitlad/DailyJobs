@@ -4,22 +4,29 @@ let locations = {};
 
 // Load both companies and locations config
 Promise.all([
-    fetch('./companies_config.json').then(response => response.json()),
+    fetch('./greenhouse_companies_config.json').then(response => response.json()),
+    fetch('./ashby_companies_config.json').then(response => response.json()),
     fetch('./locations_config.json').then(response => response.json())
 ])
-.then(([companiesData, locationsData]) => {
-    companies = Object.keys(companiesData.companies);
+.then(([greenhouseData, ashbyData, locationsData]) => {
+    // Combine companies from both configs
+    companies = [
+        ...Object.keys(greenhouseData.companies),
+        ...Object.keys(ashbyData.companies)
+    ];
+    // Remove duplicates and sort
+    companies = [...new Set(companies)].sort();
     locations = locationsData.locations;
     console.log('Loaded locations:', locations); // Debug log
     
     // Initialize the UI with the loaded data
-        populateCompanies();
+    populateCompanies();
     populateLocations();
-    })
-    .catch(error => {
+})
+.catch(error => {
     console.error('Error loading config files:', error);
     showMessage('Error loading configuration. Please refresh the page.', true);
-    });
+});
 
 // Populate companies grid
 function populateCompanies(selectedCompanies = [], searchTerm = '') {

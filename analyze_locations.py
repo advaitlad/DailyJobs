@@ -68,11 +68,11 @@ def get_country_from_name(name: str) -> str:
     except (LookupError, IndexError):
         return 'Unknown'
 
-def load_companies() -> Dict[str, str]:
-    """Load companies from config file"""
-    config_path = os.path.join('docs', 'companies_config.json')
-    with open(config_path, 'r') as f:
-        return json.load(f)['companies']
+# def load_companies() -> Dict[str, str]:
+#     """Load companies from config file"""
+#     config_path = os.path.join('docs', 'greenhouse_companies_config.json')
+#     with open(config_path, 'r') as f:
+#         return json.load(f)['companies']
 
 # def categorize_location(location: str) -> str:
 #     """Categorize location format"""
@@ -258,23 +258,6 @@ def identify_country(location: str) -> str:
     # Handle single location without Remote
     country = identify_single_country(location)
     return country if country != 'Unknown' else 'Unknown'
-
-def fetch_jobs(company_name: str, board_token: str, max_retries: int = 3) -> List[Dict]:
-    """Fetch jobs for a company with retry logic"""
-    url = f"https://boards-api.greenhouse.io/v1/boards/{board_token}/jobs"
-    
-    for attempt in range(max_retries):
-        try:
-            response = requests.get(url, timeout=10)
-            response.raise_for_status()
-            return response.json()['jobs']
-        except requests.exceptions.RequestException as e:
-            if attempt == max_retries - 1:
-                print(f"Error fetching jobs for {company_name} after {max_retries} attempts: {e}")
-                return []
-            time.sleep(2 ** attempt)  # Exponential backoff
-    
-    return []
 
 if __name__ == "__main__":
     pass  # No main function needed as this is a utility module 

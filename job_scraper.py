@@ -1,15 +1,14 @@
 import os
 import json
 import requests
-from bs4 import BeautifulSoup
-from datetime import datetime
 import firebase_admin
 from firebase_admin import credentials, firestore
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
-from greenhouse_scraper import scrape_greenhouse_jobs, load_companies
+from greenhouse_scraper import scrape_greenhouse_jobs, load_companies as load_greenhouse_companies
+from ashby_scraper import scrape_all_ashby_jobs, load_ashby_companies
 from dateutil import parser
 
 # Load environment variables
@@ -20,14 +19,14 @@ cred_json = os.getenv('FIREBASE_CREDENTIALS_JSON')
 if cred_json:
     cred = credentials.Certificate(json.loads(cred_json))
 else:
-    FIREBASE_CREDS_PATH = 'config/firebase-adminsdk-fbsvc-ac74291157.json'
+    FIREBASE_CREDS_PATH = 'config/firebase-adminsdk-fbsvc-ac74291157.json' #ac74291157
     cred = credentials.Certificate(FIREBASE_CREDS_PATH)
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
-# Load companies from config
-COMPANIES = load_companies()
-GREENHOUSE_COMPANIES = list(COMPANIES.keys())
+# Load companies from both configs
+GREENHOUSE_COMPANIES = load_greenhouse_companies()
+ASHBY_COMPANIES = load_ashby_companies()
 
 def scrape_jobs():
     new_jobs = []
@@ -52,7 +51,7 @@ def scrape_jobs():
     # Scrape Greenhouse jobs
     print("\nScraping Greenhouse jobs...")
     all_new_jobs = []
-    for company_name, board_token in COMPANIES.items():
+    for company_name, board_token in GREENHOUSE_COMPANIES.items():
         print(f"Scraping jobs from {company_name}...")
         company_jobs = scrape_greenhouse_jobs(company_name, board_token)
         total_jobs_found += len(company_jobs)
@@ -76,6 +75,31 @@ def scrape_jobs():
                 db.collection('jobs').add(job_doc)
                 all_new_jobs.append(job)
                 print(f"Added new job: {job['title']} at {job['company']} (ID: {job['job_id']}) {job['experience_level']}- Last Updated {job['hours_ago']} hours ago")
+    
+    # Scrape Ashby jobs
+    print("\nScraping Ashby jobs...")
+    ashby_jobs = scrape_all_ashby_jobs()
+    total_jobs_found += len(ashby_jobs)
+    
+    for job in ashby_jobs:
+        # Create the job document with timestamp
+        job_doc = {
+            **job,  # Include all existing job fields
+            'last_updated': job['published_at'],  # Use the published_at datetime object
+            'added_to_db': firestore.SERVER_TIMESTAMP  # When we added it to the database
+        }
+        
+        # Remove the temporary published_at field since we now have last_updated
+        job_doc.pop('published_at', None)
+        
+        # Check if job already exists in database using job_id
+        job_ref = db.collection('jobs').where('job_id', '==', job['job_id']).get()
+        
+        if not job_ref:
+            # Add to database
+            db.collection('jobs').add(job_doc)
+            all_new_jobs.append(job)
+            print(f"Added new job: {job['title']} at {job['company']} (ID: {job['job_id']}) {job['experience_level']}- Posted {job['hours_ago']} hours ago")
     
     # Send personalized emails to each verified user based on their preferences
     verified_users = len(user_preferences)
@@ -151,7 +175,7 @@ def create_html_table(jobs, user_name=None):
         <p style='font-size:1.1rem; color:#222;'>
             Hello {user_name or 'there'},<br><br>
             PingMeJobs is always on the lookout for the freshest roles, so you don't have to be.<br><br>
-            Here are roles that PingMeJobs found in the last 6 hours that match your preferences.<br><br>
+            Here are roles that PingMeJobs found in the last 6 hours that match your preferences.<br><>br
             <b>Check them out and apply early to get ahead of the crowd!</b>
         </p>
     </div>

@@ -1,0 +1,26 @@
+{
+    "companies": {
+        "notion": "notion",
+        "openai": "openai",
+        "coder": "coder",
+        "deel": "deel",
+        "eightsleep": "eightsleep",
+        "hackerone": "hackerone",
+        "fullstory": "fullstory",
+        "january": "january",
+        "multiverse": "multiverse",
+        "posthog": "posthog",
+        "ramp": "ramp",
+        "sequoia": "sequoia",
+        "vanta": "vanta",
+        "replit": "replit",
+        "linear": "linear",
+        "captions": "captions",
+        "dandy": "dandy",
+        "writer": "writer",
+        "athelas": "commure-athelas",
+        "jerry": "jerry",
+        "formenergy": "formenergy",
+        "gorgias": "gorgias"
+    }
+}
